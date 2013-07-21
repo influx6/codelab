@@ -1,0 +1,12 @@
+[submodule "dam"]
+	path = dam
+	url = ./dam
+[submodule "ds"]
+	path = ds
+	url = ./ds
+[submodule "hooks"]
+	path = hooks
+	url = ./hooks
+[submodule "flow"]
+	path = flow
+	url = ./flow

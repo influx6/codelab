@@ -1,0 +1,5 @@
+name: ds
+version: 0.0.1
+description: a wrapper to allow easy use of elementary data structure
+dependencies:
+       unittest: any
