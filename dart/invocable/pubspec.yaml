@@ -1,0 +1,7 @@
+name: invocable
+version: 0.0.1
+author: Alexander Adeniyin Ewetumo
+description: making runtime attributes and methods dynamically added a go!
+dependencies:
+        hub:
+         path: ../hub   

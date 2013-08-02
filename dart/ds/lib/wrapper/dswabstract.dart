@@ -1,10 +1,21 @@
 part of ds.wrapper;
 
-class DSWAbstract<V,T,K> extends DSWrapper{
+class dsWImpl{
+	dynamic get(dynamic n);
+	void set(dynamic k,dynamic t);
+	dynamic delete(dynamic n);
+	has(dynamic n,[dynamic v]);
+}
+
+class dsWAbstract<V,T,K> extends dsStorage implements dsWImpl{
 	V store;
 	
-	K get(T t);
-	void set(T n,K k);
-	k delete(T n);
+	dynamic noSuchMethod(Invocation n){
+		var a = reflect(store);
+		return a.invokeOn(n.memberName,m.positionalArguments);
+	}
 	
+	String toString(){
+		return this.store.toString();
+	}
 }

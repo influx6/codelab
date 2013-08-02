@@ -1,17 +1,18 @@
 library ds.wrapper;
 
+part '../helpers.dart';
 part 'dswabstract.dart';
 part 'dswmap.dart';
 part 'dswlist.dart';
 
-class DSWrapper<T,K>{
-	
+class dsStorage{
+		
 	static createMap(){
-		return new DSWMapStorage<T,K>();
+		return new dsMapStorage();
 	}
 	
 	static createList(){
-		return new DSWListStorage<T,K>();
+		return new dsListStorage();
 	}
 }
 

@@ -1,9 +1,9 @@
 part of ds.wrapper;
 
 
-class DSWListStorage<K> extends DSWAbstract<List,num,K>{
+class dsListStorage<K> extends dsWAbstract<List,num,K>{
 	
-	ListStorage(num maxSize){
+	dsListStorage(num maxSize){
 		this.store = new List<K>(maxSize);
 	}
 	
@@ -15,7 +15,7 @@ class DSWListStorage<K> extends DSWAbstract<List,num,K>{
 		this.store[t] = k;
 	}
 	
-	void add(k k){
+	void add(K k){
 		return this.store.add(k);	
 	}
 	
@@ -28,5 +28,11 @@ class DSWListStorage<K> extends DSWAbstract<List,num,K>{
 		this.store.removeAt(b);
 		return n;
 	}
+	
+	bool has(dynamic t,[k]){
+		if(this.store.index(t) != -1) return true;		
+		return false;
+	}
+
 	
 }

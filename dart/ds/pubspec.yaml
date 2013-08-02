@@ -1,5 +1,5 @@
 name: ds
 version: 0.0.1
+author: Alexander Adeniyi Ewetumo
 description: a wrapper to allow easy use of elementary data structure
 dependencies:
-       unittest: any

@@ -4,8 +4,6 @@ import 'dart:io';
 import 'dart:async';
 
 // simple cmd tool to create and link dart library structure
-
-final pubtemp = "name: @name\ndescription: @description\nversion: 0.0.1\nauthor: ";
 final platform = Platform.environment;
 //final packages = new Path(platform['HOME'].concat('/Pubpackages'));
 final home = new Path(Directory.current.path);
@@ -35,6 +33,13 @@ final addhelp = """
   :add (add a new dir that will be linked with the packages folder)
         eg. dam :add framework,extensions,apps
 """;
+final pubtemp = """
+name: @name
+version: 0.0.1
+author: Developer
+description: @description
+dependencies:
+""";
 
 void makeDir(Path path,[void callback(d)]){
 	new Directory.fromPath(path).create(recursive:true).then((dir){
@@ -56,7 +61,7 @@ void createPubSpec(Path path,data){
 }
 
 void make(List args){
-      if(args.isEmpty || args.length > 3) return (print('Incorrect Arguments!\n $makehelp'));
+      if(args.isEmpty || args.length > 3) return (print('$makehelp \n Incorrect Arguments Passed! '));
       var hasDesc = (args.length >= 2 && new RegExp(r'^desc:').hasMatch(args[1])) ? true : false;
       var hasDirs = (args.length >= 3 && new RegExp(r'^dirs:').hasMatch(args[2])) ? true : false;
       
@@ -102,7 +107,7 @@ void link(path,[Path fr]){
     try{
          var ln = new Link.fromPath(loc.join(new Path('packages')));
          ln.createSync(from.toString());
-         print('---> Adding SymLink for Pubpackages as ${ln.path}!');
+         print('---> Adding SymLink for packages as ${ln.path}!');
     }on LinkException catch(e){
            print('Unable to create symlink for packages or a folder/symlink with the same name exists!');
            // print(makehelp);
@@ -121,7 +126,6 @@ void printHelp(){
       print(inithelp);
       print(makehelp);
       print(addhelp);
-      //print(linkhelp);
 }
 
 void main(){
