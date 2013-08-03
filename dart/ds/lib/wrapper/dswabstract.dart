@@ -12,6 +12,7 @@ class dsWAbstract<V,T,K> extends dsStorage implements dsWImpl{
 	
 	dynamic noSuchMethod(Invocation n){
 		var a = reflect(store);
+		if(!a.members.containsKey(const Symbol(n.memberName))) 
 		return a.invokeOn(n.memberName,m.positionalArguments);
 	}
 	

@@ -3,8 +3,7 @@ library hooks;
 import 'dart:async';
 import 'dart:collection';
 import 'dart:mirrors';
-// import 'dart:_collection-dev' as dev;
-// import 'dart:_js_mirror' as jsmirror;
+import 'package:hub/hub.dart';
 import 'package:ds/ds.dart' as ds;
 
 part 'hookabstract.dart';
@@ -27,17 +26,7 @@ class _Utility{
     return Function.apply(func,param[0],param[1]);
   }
 
-  static var symbolMatch = new RegExp(r'\(|Symbol|\)');
-
-  static genNamedArguments(Map params){
-    if(params.isEmpty) return params;
-    Map<Symbol,dynamic> p = new Map<Symbol,dynamic>();
-    params.forEach((k,v){
-      if(k is! Symbol) p[new Symbol(k)] = v;
-      else p[k] = v;
-    });
-    return p;
-  }
+  static final symbolMatch = new RegExp(r'\(|Symbol|\)');
 
  static updateTagCount(List tags,String tag){
 	if(tags.contains(tag)) return -1;

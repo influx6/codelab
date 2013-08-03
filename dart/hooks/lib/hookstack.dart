@@ -8,7 +8,7 @@ class ParamBeautifier{
 	}
 	
     ParamBeautifier(List p){
-      if(p.length > 1) p[1] = _Utility.genNamedArguments(p[1]);
+      if(p.length > 1) p[1] = Hub.encryptNamedArguments(p[1]);
       this._params = p;
     }
 
@@ -63,7 +63,7 @@ class _MutableHookStack extends HookStack{
       if(feed is List){
         if(feed.length > 2 || feed.length < 2) return [feed];
         if(feed.length == 2){
-          feed[1] = _Utility.genNamedArguments(feed[1]);
+          feed[1] = Hub.encryptNamedArguments(feed[1]);
           return feed;
         }
       }

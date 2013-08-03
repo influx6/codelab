@@ -83,10 +83,10 @@ abstract class InvocableAbstract{
 		return dyno;
 	}
 		
-	dynamic InvocationChain(Invocation n){
+	dynamic _invocationChain(Invocation n){
 		var id = Hub.decryptSymbol(n.memberName).replaceAll('=','');
 		
-		if(!this.check(id)) return false;
+		if(!this.check(id)) return null;
 		
 		var dyno = this._secureGet(id);
 		if(n.isMethod || this.check(id,method:true)){
@@ -98,25 +98,30 @@ abstract class InvocableAbstract{
 			if(n.isGetter && this.check(id,get:true)) 
 				return Function.apply(dyno.get(this._symbCache.create('get')),n.positionalArguments,n.namedArguments);
 			if(n.isSetter && this.check(id,set:true)){
-				Function.apply(dyno.get(this._symbCache.create('set')),n.positionalArguments,n.namedArguments);
+				var ret = Function.apply(dyno.get(this._symbCache.create('set')),n.positionalArguments,n.namedArguments);
+				if(ret != null) this.modify(id,val:ret);
 				return true;
 			}
 		}
 			
 	}
 	
-	dynamic errorInvocationCall(Invocation n,Object c){
+	dynamic _errorInvocationCall(Invocation n,Object c){
 		throw new NoSuchMethodError(
 			c,
 			Hub.decryptSymbol(n.memberName),
 			n.positionalArguments,
 			Hub.decryptNamedArguments(n.namedArguments));
 	}
-		
-	dynamic noSuchMethod(Invocation n){
-		var val = this.InvocationChain(n);
-		if(val == null) return this.errorInvocationCall(n,this.context);
+	
+	dynamic handleInvocations(n){
+		var val = this._invocationChain(n);
+		if(val == null) return this._errorInvocationCall(n,this.context);
 		return val;
+	}
+			
+	dynamic noSuchMethod(Invocation n){
+		return this.handleInvocations(n);
 	}
 	
 	Wrap get sim{
@@ -191,5 +196,73 @@ class Invocable extends InvocableAbstract{
 		return dyno;
 	}
 	
+}
+
+class ExtendableInvocation{
+	Invocable env;
+	
+	static create(){ return new ExtendableInvocation(); }
+	ExtendableInvocation(){
+		this.env = Invocable.create(this);
+	}
+	
+	dynamic noSuchMethod(Invocation n){
+		return this.env.handleInvocations(n);
+	}
+}
+
+class InvocationBinder{
+	final cache = Hub.createSymbolCache();
+	final bindings = InvocationMap.create();
+	final dynamic context;
+	Mirror contextMirror;
+	Mirror classMirror;
+	
+	
+	static create(c) => new InvocationBinder(c);
+	
+	InvocationBinder(context): this.context = context{
+		this.contextMirror = reflect(context);
+		this.classMirror = this.contextMirror.type;
+	}
+	
+	void alias(String id,dynamic bound){
+		if(bound is Function) this._bindDynamic(id,bound);
+		if(bound is String) this._bindName(id,bound);
+	}
+	
+	void _bindName(String id,String bound){
+		if(!this.classMirror.methods.containsKey(this.cache.create(bound)))
+			throw new Exception('$bound does not exist!');		
+		this.bindings.add(this.cache.create(id),this.cache.create(bound));
+	}
+		
+	void _bindDynamic(String id,Function bound){
+		this.bindings.add(this.cache.create(id),bound);		
+	}
+		
+	void unAlias(String id){
+		this.bindings.destroy(this.cache.create(id));
+		this.cache.destroy(id);
+	}
+	
+	dynamic handleInvocation(Invocation n){
+		var id = Hub.decryptSymbol(n.memberName);
+		var bound = this.bindings.get(n.memberName);
+		if(bound == null) return Hub.throwNoSuchMethodError(n,this.context);
+		if(bound is Symbol){
+			var methodParams = this.classMirror.methods[bound].parameters;
+			if(Hub.isNamed(methodParams))
+				return this.contextMirror.invoke(bound,n.positionalArguments,n.namedArguments);
+			else return this.contextMirror.invoke(bound,n.positionalArguments);
+		}
+		if(bound is Function){
+			return Function.apply(bound,n.positionalArguments,n.namedArguments);
+		}
+	}
+	
+	dynamic noSuchMethod(Invocation n){
+		return this.handleInvocation(n);
+	}
 
 }
