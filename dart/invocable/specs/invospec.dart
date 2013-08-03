@@ -1,6 +1,6 @@
 part of specs;
 
-class Host extends ExtendableInvocation{
+class Host extends ExtendableInvocable{
 	Host() : super();
 }
 
@@ -42,18 +42,20 @@ void extendableSpec(){
 
 	var host = new Host();
 	assert(host.env is Invocable);
-	host..env.add('age',val:23);
-	host.env.add('name',val:'alex');
+	host..env.add('age',val:23)..env.add('name',val:'alex');
 	
 	assert(host.name == 'alex');
 		
-	// var binder = InvocationBinder.create(new Map.from({ 'n':1,'m':2}));
-// 	binder.alias('each','forEach');
-// 	binder.each((n,k){ assert(n is String); assert(k is num); });
+	var binder = InvocationBinder.create(new Map.from({ 'n':1,'m':2}));
+	binder.alias('each','forEach');
+	binder.each((n,k){ assert(n is String); assert(k is num); });
 	
 	var biv =  InvocationBinder.create(host.env);
-	biv.alias('put','add');
-	biv.put('crawl',val:(){ return "crawl"; });
+	assert(InvocationBinder.classMirrorInvokeNamedSupportTest() == false);
+	biv.alias('put',host.env.add);
+	assert(biv.put is Function);
+	biv.put('slug',val:(){});
+	assert((host.slug != null) && host.slug is Function);
 	
 	
 }

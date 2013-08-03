@@ -76,6 +76,8 @@ abstract class InvocableAbstract{
 	
 	bool destroy(String id);
 
+	bool hasInvocable(String id);
+		
 	InvocationMap _secureGet(String id){
 		var sid = this._symbCache.create(id);
 		var dyno = this._dynos.get(sid);
@@ -144,6 +146,8 @@ class Invocable extends InvocableAbstract{
 	}
 	
 	void add(String id,{ dynamic val: null, Function get: null, Function set:null }){
+		if(val == null && get == null && set == null) return;
+		
 		final dyno = InvocationMap.create();
 		bool isMethod = (val is Function);
 		
@@ -190,6 +194,11 @@ class Invocable extends InvocableAbstract{
 		return false;
 	}
 	
+
+	bool hasInvocable(String id){
+		return this._dynos.has(Hub.encryptSymbol(id));
+	}
+	
 	dynamic destroy(String id){
 		var dyno = this._dynos.destroy(this._symbCache.create(id));
 		this._symbCache.destroy(id);
@@ -198,11 +207,11 @@ class Invocable extends InvocableAbstract{
 	
 }
 
-class ExtendableInvocation{
+class ExtendableInvocable{
 	Invocable env;
 	
-	static create(){ return new ExtendableInvocation(); }
-	ExtendableInvocation(){
+	static create(){ return new ExtendableInvocable(); }
+	ExtendableInvocable(){
 		this.env = Invocable.create(this);
 	}
 	
@@ -214,24 +223,50 @@ class ExtendableInvocation{
 class InvocationBinder{
 	final cache = Hub.createSymbolCache();
 	final bindings = InvocationMap.create();
-	final dynamic context;
+	bool _namedSupported;
+	bool _byPassCheck = false;
+	dynamic context;
 	Mirror contextMirror;
 	Mirror classMirror;
 	
+	static bool classMirrorInvokeNamedSupportTest(){
+		try{
+			var simpleclass = reflectClass(_EmptyContext);
+			Map<Symbol,dynamic> named = new Map<Symbol,dynamic>();
+			simpleclass.invoke(new Symbol('toString'),[],named);
+		}on UnimplementedError{
+			return false;
+		}
+		return true;
+	}
+		
+	static create([c]) => new InvocationBinder(c);
 	
-	static create(c) => new InvocationBinder(c);
-	
-	InvocationBinder(context): this.context = context{
-		this.contextMirror = reflect(context);
-		this.classMirror = this.contextMirror.type;
+	InvocationBinder([context]){
+		this._namedSupported = InvocationBinder.classMirrorInvokeNamedSupportTest();
+		this.context = (context != null ? context : const _EmptyContext());
+		if(this._namedSupported) this.contextMirror = reflect(context);
+		if(this._namedSupported) this.classMirror = this.contextMirror.type;		
 	}
 	
+	bool hasBinder(String id){
+		return this.bindings.has(Hub.encryptSymbol(id));
+	}
+		
 	void alias(String id,dynamic bound){
 		if(bound is Function) this._bindDynamic(id,bound);
 		if(bound is String) this._bindName(id,bound);
 	}
 	
+	void unAlias(String id){
+		this.bindings.destroy(this.cache.create(id));
+		this.cache.destroy(id);
+	}
+	
 	void _bindName(String id,String bound){
+		if(!this._namedSupported && !this._byPassCheck) 
+			throw new UnimplementedError("""Name aliasing is not functional due to lack of ClassMirror.invoke named arguments unspport!""");
+			
 		if(!this.classMirror.methods.containsKey(this.cache.create(bound)))
 			throw new Exception('$bound does not exist!');		
 		this.bindings.add(this.cache.create(id),this.cache.create(bound));
@@ -240,29 +275,67 @@ class InvocationBinder{
 	void _bindDynamic(String id,Function bound){
 		this.bindings.add(this.cache.create(id),bound);		
 	}
-		
-	void unAlias(String id){
-		this.bindings.destroy(this.cache.create(id));
-		this.cache.destroy(id);
+	
+	dynamic _SymbolCall(Invocation n,bound){
+		var method = this.classMirror.methods[bound];
+		if(n.isGetter) return this.classMirror.methods[bound];
+		if(!this._namedSupported && this._byPassCheck) 
+			return this.contextMirror.invoke(bound,n.positionalArguments);	
+		return this.contextMirror.invoke(bound,n.positionalArguments,n.namedArguments);		
 	}
 	
-	dynamic handleInvocation(Invocation n){
+	dynamic _FunctionCall(Invocation n,bound){
+		if(n.isGetter) return bound;
+		return Function.apply(bound,n.positionalArguments,n.namedArguments);
+	}
+		
+	dynamic handleBindings(Invocation n){
 		var id = Hub.decryptSymbol(n.memberName);
 		var bound = this.bindings.get(n.memberName);
 		if(bound == null) return Hub.throwNoSuchMethodError(n,this.context);
-		if(bound is Symbol){
-			var methodParams = this.classMirror.methods[bound].parameters;
-			if(Hub.isNamed(methodParams))
-				return this.contextMirror.invoke(bound,n.positionalArguments,n.namedArguments);
-			else return this.contextMirror.invoke(bound,n.positionalArguments);
-		}
-		if(bound is Function){
-			return Function.apply(bound,n.positionalArguments,n.namedArguments);
-		}
+		if(bound is Symbol) return this._SymbolCall(n,bound);
+		if(bound is Function) return this._FunctionCall(n,bound);
 	}
 	
 	dynamic noSuchMethod(Invocation n){
-		return this.handleInvocation(n);
+		return this.handleBindings(n);
 	}
 
+}
+
+class DangerouslyBadInvocationBinder extends InvocationBinder{
+	DangerouslyBadInvocationBinder([n]): super(n){
+		this._byPassCheck = true;
+	}
+}
+
+class ExtendableInvocableBinder{
+	Invocable paper;
+	InvocationBinder binder;
+	
+	static create(){
+		return new ExtendableInvocableBinder();
+	}
+	
+	ExtendableInvocableBinder(){
+		this.paper = Invocable.create(this);
+		this.binder =  = InvocationBinder.create(this);
+	}
+	
+	void alias(String id,dynamic bound){
+		this.binder.alias(id,bound);
+	}
+	
+	void unAlias(String id){
+		this.binder.unAlias(id);
+	}
+	
+	dynamic noSuchMethod(Invocation n){
+		var bound = Hub.decryptSymbol(n.memberName);
+		if(this.paper.hasInvocable(bound) && this.binder.hasBinder(bound))
+			throw new Exception("Extendable's binder and invocable can't share same identifier $bound!");
+		if(this.paper.hasInvocable(bound)) return this.handleInvocations(n);
+		if(this.binder.hasBinder(bound)) return this.handleBindings(n);
+		return Hub.throwNoSuchMethodError(n,this);
+	}
 }
