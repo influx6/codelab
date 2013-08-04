@@ -46,9 +46,9 @@ void extendableSpec(){
 	
 	assert(host.name == 'alex');
 		
-	var binder = InvocationBinder.create(new Map.from({ 'n':1,'m':2}));
-	binder.alias('each','forEach');
-	binder.each((n,k){ assert(n is String); assert(k is num); });
+// 	var binder = DangerouslyBadInvocationBinder.create(new Map.from({ 'n':1,'m':2}));
+// 	binder.alias('each','forEach');
+// 	binder.each((n,k){ assert(n is String); assert(k is num); });
 	
 	var biv =  InvocationBinder.create(host.env);
 	assert(InvocationBinder.classMirrorInvokeNamedSupportTest() == false);
@@ -56,6 +56,13 @@ void extendableSpec(){
 	assert(biv.put is Function);
 	biv.put('slug',val:(){});
 	assert((host.slug != null) && host.slug is Function);
+	
+	var div = InverseInvocable.create(new Map.from({ 'n':1,'m':2}));
+	
+	assert(div.add is Function);
+	assert(div.forEach is Function);
+	div.add('shell',val:'shellrazer');
+	assert(div.shell == 'shellrazer');
 	
 	
 }

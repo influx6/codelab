@@ -9,11 +9,11 @@ class dsWImpl{
 
 class dsWAbstract<V,T,K> extends dsStorage implements dsWImpl{
 	V store;
+	Mirror _stored;
 	
 	dynamic noSuchMethod(Invocation n){
-		var a = reflect(store);
-		if(!a.members.containsKey(const Symbol(n.memberName))) 
-		return a.invokeOn(n.memberName,m.positionalArguments);
+		if(this._stored == null) this._stored = reflect(store);
+		this._stored.delegate(n);
 	}
 	
 	String toString(){

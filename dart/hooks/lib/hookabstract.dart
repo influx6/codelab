@@ -55,14 +55,6 @@ abstract class HookDynamic{
 	void define();
 	void get();
 	dynamic noSuchMethodCaller(Invocation n);
-	
-	Symbol generateName(String n){
-		return new Symbol(n);
-	}
-	
-	String getPureName(Symbol n){
-		return MirrorSystem.getName(n);
-	}
 		
 	dynamic noSuchMethodError(Invocation n){
 		this.noSuchMethodCaller(n);

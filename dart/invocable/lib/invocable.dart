@@ -303,11 +303,16 @@ class InvocationBinder{
 
 }
 
-class DangerouslyBadInvocationBinder extends InvocationBinder{
-	DangerouslyBadInvocationBinder([n]): super(n){
-		this._byPassCheck = true;
-	}
-}
+// class DangerouslyBadInvocationBinder extends InvocationBinder{
+// 	
+// 	static create([n]){
+// 		return new DangerouslyBadInvocationBinder(n);
+// 	}
+// 		
+// 	DangerouslyBadInvocationBinder([n]): super(n){
+// 		this._byPassCheck = true;
+// 	}
+// }
 
 class ExtendableInvocableBinder{
 	Invocable paper;
@@ -319,7 +324,12 @@ class ExtendableInvocableBinder{
 	
 	ExtendableInvocableBinder(){
 		this.paper = Invocable.create(this);
-		this.binder =  = InvocationBinder.create(this);
+		this.binder = InvocationBinder.create(this);
+		
+		this.alias('add',this.paper.add);
+		this.alias('check',this.paper.add);
+		this.alias('get',this.paper.get);
+		this.alias('modify',this.paper.modify);
 	}
 	
 	void alias(String id,dynamic bound){
@@ -330,12 +340,47 @@ class ExtendableInvocableBinder{
 		this.binder.unAlias(id);
 	}
 	
-	dynamic noSuchMethod(Invocation n){
+	dynamic handleExtendable(Invocation n){
 		var bound = Hub.decryptSymbol(n.memberName);
 		if(this.paper.hasInvocable(bound) && this.binder.hasBinder(bound))
 			throw new Exception("Extendable's binder and invocable can't share same identifier $bound!");
-		if(this.paper.hasInvocable(bound)) return this.handleInvocations(n);
-		if(this.binder.hasBinder(bound)) return this.handleBindings(n);
+		if(this.paper.hasInvocable(bound)) return this.paper.handleInvocations(n);
+		if(this.binder.hasBinder(bound)) return this.binder.handleBindings(n);
 		return Hub.throwNoSuchMethodError(n,this);
+	}
+	
+	dynamic noSuchMethod(Invocation n){
+		return this.handleExtendable(n);
+	}
+}
+
+class InverseInvocable extends ExtendableInvocableBinder{
+	dynamic context;
+	Mirror contextMirror;
+	Mirror classMirror;
+	
+	static create(m){
+		return new InverseInvocable(m);
+	}
+	
+	InverseInvocable(context): super(){
+		this.context = context;
+		this.contextMirror = reflect(context);
+		if(this.contextMirror is! InstanceMirror) 
+			throw "$context must be a instance of a Object";
+		this.classMirror = this.contextMirror.type;
+	}
+	
+	bool checkAvailable(Symbol n){
+		return this.classMirror.members.containsKey(n);
+	}
+	
+	dynamic noSuchMethod(Invocation n){
+		try{
+			return this.handleExtendable(n);
+		}on NoSuchMethodError catch(e){
+			if(!this.checkAvailable(n.memberName)) throw e;
+			return this.contextMirror.delegate(n);
+		}
 	}
 }

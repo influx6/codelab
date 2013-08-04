@@ -1,5 +1,27 @@
 part of hooks;
 
+class _Utility{
+
+  static List prepareResponse(param){
+	if(param is List){
+		if(param.length == 2 && param[0] is List && param[1] is Map) return param;
+		if(param.length < 2 || param > 2) return [param];
+	}else return [[param]];
+	
+  }
+
+  static dynamic funcCaller(func,List param){
+    if(param.length == 1) return Function.apply(func,param[0]);
+    return Function.apply(func,param[0],param[1]);
+  }
+
+ static updateTagCount(List tags,String tag){
+	if(tags.contains(tag)) return -1;
+	tags.add(tag);
+	return tags.length - 1;
+ }
+}
+
 class ParamBeautifier{
     dynamic _params;
 
@@ -81,7 +103,7 @@ class _ImmutableHookStack extends HookStack{
   dynamic _callParams;
   
   Future _call(params){
-	  this._callParams = params;u7
+	  this._callParams = params;
       var done = new Completer();
       if(this._executors.isEmpty){
         done.complete(params);

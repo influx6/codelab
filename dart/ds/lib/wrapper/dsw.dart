@@ -1,5 +1,7 @@
 library ds.wrapper;
 
+import 'dart:mirrors';
+
 part '../helpers.dart';
 part 'dswabstract.dart';
 part 'dswmap.dart';
