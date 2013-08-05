@@ -1,7 +1,10 @@
 name: invocable
-version: 0.0.1
-author: Alexander Adeniyin Ewetumo
+version: 0.1.0
+author: Ewetumo Alexander Adeniyi <trinoxf@gmail.com>
+homepage: https://github.com/influx6/invocable
 description: making runtime attributes and methods dynamically added a go!
 dependencies:
+        hub: any
+dev-dependencies:
         hub:
-         path: ../hub   
+         path: ../hub

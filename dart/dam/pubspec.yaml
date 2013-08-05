@@ -1,4 +1,5 @@
 name: dam
 version: 0.0.1
-author: Ewetumo Alexander Adeniyin
+author: Ewetumo Alexander Adeniyi <trinoxf@gmail.com>
+repository: https://github.com/influx6/dam
 description: simple small utility to make a dart library folder so you dont have to!

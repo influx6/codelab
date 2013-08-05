@@ -1,5 +1,6 @@
 name: ds
 version: 0.0.1
-author: Alexander Adeniyi Ewetumo
-description: a wrapper to allow easy use of elementary data structure
+author: Ewetumo Alexander Adeniyi <trinoxf@gmail.com>
+repository: https://github.com/influx6/ds
+description: a wrapper to allow easy use of elementary node based data structures
 dependencies:

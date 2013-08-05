@@ -224,7 +224,6 @@ class InvocationBinder{
 	final cache = Hub.createSymbolCache();
 	final bindings = InvocationMap.create();
 	bool _namedSupported;
-	bool _byPassCheck = false;
 	dynamic context;
 	Mirror contextMirror;
 	Mirror classMirror;
@@ -264,7 +263,7 @@ class InvocationBinder{
 	}
 	
 	void _bindName(String id,String bound){
-		if(!this._namedSupported && !this._byPassCheck) 
+		if(!this._namedSupported) 
 			throw new UnimplementedError("""Name aliasing is not functional due to lack of ClassMirror.invoke named arguments unspport!""");
 			
 		if(!this.classMirror.methods.containsKey(this.cache.create(bound)))
@@ -279,7 +278,7 @@ class InvocationBinder{
 	dynamic _SymbolCall(Invocation n,bound){
 		var method = this.classMirror.methods[bound];
 		if(n.isGetter) return this.classMirror.methods[bound];
-		if(!this._namedSupported && this._byPassCheck) 
+		if(!this._namedSupported) 
 			return this.contextMirror.invoke(bound,n.positionalArguments);	
 		return this.contextMirror.invoke(bound,n.positionalArguments,n.namedArguments);		
 	}
@@ -303,17 +302,6 @@ class InvocationBinder{
 
 }
 
-// class DangerouslyBadInvocationBinder extends InvocationBinder{
-// 	
-// 	static create([n]){
-// 		return new DangerouslyBadInvocationBinder(n);
-// 	}
-// 		
-// 	DangerouslyBadInvocationBinder([n]): super(n){
-// 		this._byPassCheck = true;
-// 	}
-// }
-
 class ExtendableInvocableBinder{
 	Invocable paper;
 	InvocationBinder binder;
@@ -327,7 +315,7 @@ class ExtendableInvocableBinder{
 		this.binder = InvocationBinder.create(this);
 		
 		this.alias('add',this.paper.add);
-		this.alias('check',this.paper.add);
+		this.alias('check',this.paper.check);
 		this.alias('get',this.paper.get);
 		this.alias('modify',this.paper.modify);
 	}

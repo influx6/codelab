@@ -1,17 +1,53 @@
 part of hooks;
 
-
-class DropController{
+class DropGenerator extends DynamicGenerator{
 	
+	static create(n,d,c) => new DropGenerator(n,d,c);
+	
+	DropGenerator(name,deps,criteria): super(name,deps,criteria);
+	
+}
+
+class DropController extends DynamicController{
 	
 	static create(){
 		return new DropController();
 	}
-	
-	
-	Object noSuchMethod(Invocation n){
 		
+	DropController();
+	
+	void define(String ruleName,{ Map dependency:null, Function criteria:null }){
+		if(this.generators.has(this.cache.create(ruleName)))
+			 throw "Generators Name: $ruleName is already used!"; 
+		if(dependency == null) dependency = {'named':{},'positional':[]};
+		this.generators.add(this.cache.create(ruleName),DropGenerator.create(ruleName,dependency,criteria));
 	}
+	
+	void provide(String tag,Function generator){
+		if(this.providers.has(this.cache.create(tag))) 
+			throw "Provider $tag already provided!";
+		this.providers.add(this.cache.create(tag),generator);
+	}
+	
+	dynamic generate(String tag){
+		return null;
+	}
+	
+	dynamic dropHandler(Invocation n){
+	
+	}
+	
+	Future assertDependencies(List positional,Map named){
+		var fpos = Hub.forEachFuture(positional,(n){
+			print('positional:$n');
+			return (this.providers.has(n));
+		});
+		var fnamed = Hub.forEachFuture(named,(n){
+			print('named:$n');
+			return (this.providers.has(n));
+		});
+	}
+
 }
 	
 @deprecated
