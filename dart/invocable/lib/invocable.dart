@@ -43,6 +43,14 @@ class InvocationMap{
 		if(!this.invocations.containsKey(key)) return false;
 		return true;
 	}
+		
+	void flush(){
+		this.invocations.clear();
+	}
+	
+	String toString(){
+		return this.invocations.toString();
+	}
 
 }
 
