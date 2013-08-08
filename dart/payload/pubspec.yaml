@@ -1,0 +1,15 @@
+name: payload
+version: 0.0.1
+author: Alexander Adeniyin Ewetumo
+description: a simple set of classes for handling diffent pieces of a web service
+dependencies:
+ # hub: any
+ # ds: any
+ # invocable: any
+dev-dependencies:
+  hub:
+   path: ../hub
+  ds:
+   path: ../ds
+  invocable:
+   path: ../invocable

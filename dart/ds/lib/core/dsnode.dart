@@ -20,7 +20,8 @@ class dsNode<T> extends dsAbstractNode<T>{
 		this.data = null;
 	}
 	
-	// this sends a all nodes linked to this node to set their data to null by calling the nodes free() method internal
+	// this sends a all nodes linked to this node to set their data to 
+	//null by calling the nodes free() method internal
 	void freeCascade(){
 		this.free();
 		if(this.left != null && !this.left.isFree) this.left.freeCascade();

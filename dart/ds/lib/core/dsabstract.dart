@@ -55,6 +55,10 @@ abstract class dsTreeNode<T> extends dsAbstractNode<T>{
 	dsTreeNode<T> right;
 	dsTreeNode<T> root;
 }
+
+abstract class dsGSearcher{
+	
+}
 	
 abstract class dsGArc<N,T> implements Comparable{
 	N node;
@@ -92,10 +96,6 @@ abstract class dsGNode<T,M> implements Comparable{
 		return false;
 	}
 	
-}
-
-abstract class dsGSearcher{
-
 }
 
 abstract class dsAbstractGraph<T,M> extends DS implements Comparable{

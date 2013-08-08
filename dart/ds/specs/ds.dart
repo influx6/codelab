@@ -2,9 +2,9 @@ library ds.specs;
 
 import 'package:ds/ds.dart' as ds;
 
-part 'node.dart';
-part 'skip.dart';
-part 'graph.dart';
+part './lists/node.dart';
+part './iterators/skip.dart';
+part './graphs/graph.dart';
 	
 void main(){
 	nodeSpec();
